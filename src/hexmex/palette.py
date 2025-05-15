@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from hexes import hex2hex
 
-imgPath = '/Users/billyzduke/Dropbox/@inhumantouch/Patience/ALL Slides @2048□/'
+imgPath = '/Volumes/Moana/Dropbox/inhumantouch.art/Patience/ALL Slides @2048□/'
 
 # os.walk
 imgFiles = next(walk(imgPath), (None, None, []))[2]  # [] if no file
@@ -22,7 +22,7 @@ limiter = 0
 createPaletteImgs = True 
 createCompImage = False
 if createCompImage:
-  fonts = [ImageFont.truetype('/Users/billyzduke/Dropbox/Fonts/Fonts - S/Source_Code_Pro/static/SourceCodePro-ExtraLight.ttf', 32), ImageFont.truetype('/Users/billyzduke/Dropbox/Fonts/Fonts - S/Source_Code_Pro/static/SourceCodePro-Black.ttf', 16)]
+  fonts = [ImageFont.truetype('/Volumes/Moana/Fonts/Fonts - S/Source_Code_Pro/static/SourceCodePro-ExtraLight.ttf', 32), ImageFont.truetype('/Volumes/Moana/Fonts/Fonts - S/Source_Code_Pro/static/SourceCodePro-Black.ttf', 16)]
 
 madeFrequencyPalettes = 0
 madeLuminancePalettes = 0
