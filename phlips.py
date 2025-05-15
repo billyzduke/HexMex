@@ -1,0 +1,15 @@
+flips = [
+  4,
+  8,
+  10,
+  17,
+  18,
+  23,
+  25,
+  29,
+  38,
+  41,
+  42,
+  43,
+  48,
+] # specific slides on which to skip a flip, after which flipping resumes automatically on the next slide
