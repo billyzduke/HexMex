@@ -1,10 +1,6 @@
 
 import math
-import extcolors
-import numpy as np
-import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
-from matplotlib import gridspec
 import colorsys
 import imageio
 
@@ -42,20 +38,24 @@ def colorpicker_create():
 #print(whereItsAt)
 
 createImgs = {
-  'linier': True,
-  'refier': True,
-  'txtier': True,
-  'vertier': True,
-  'horzier': True,
+  'linierHorz': True,
+  'linierVert': True,
+  'linierDual': False,
+  'txtierHorz': True,
+  'txtierVert': True,
+  'txtierDual': False,
+  'refierDual': True,
 }
 hueDegreeDetails = True
 
 imgsCreated = {
-  'linier': 0,
-  'refier': 0,
-  'txtier': 0,
-  'vertier': True,
-  'horzier': True,
+  'linierHorz': 0,
+  'linierVert': 0,
+  'linierDual': 0,
+  'txtierHorz': 0,
+  'txtierVert': 0,
+  'txtierDual': 0,
+  'refierDual': 0,
 }
 
 def text2width(cntxt, xy, txt, fill, font, w):
@@ -73,29 +73,39 @@ isq = 2160 # small/inside frame square pixel size / shorter side of v or w frame
 bmp = ((osq - isq) / 2) # the "bump": the distance on either side between edge of large frame & centered small frame # 840 pixels
 lmt_lo = 783 # closest to top/left of small frame that text can be positioned
 lmt_hi = 2722 # closest to bottom/right of small frame that text can be positioned
-sl = 0 # slide number within premiere pro project
+sl = 0 # starting slide number within premiere pro project -1
 flip = 0 # text will automatically alternate between positions above or below line until flipped
 
 hueSpectrum360 = [0] * 360
 
-if createImgs['linier']:
-  # create transparent PNG with all color lines accumulated up to the current slide #
-  linier = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
-  inLinier = ImageDraw.Draw(linier)
-if createImgs['horzier']:
+if createImgs['linierHorz']:
   # create transparent PNG with horizontal color lines accumulated up to the current slide #
-  horzier = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
-  inHorzier = ImageDraw.Draw(horzier)
-if createImgs['vertier']:
+  linierHorz = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
+  inLinierHorz = ImageDraw.Draw(linierHorz)
+  
+if createImgs['linierVert']:
   # create transparent PNG with vertical color lines accumulated up to the current slide #
-  vertier = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
-  inVertier = ImageDraw.Draw(vertier)
+  linierVert = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
+  inLinierVert = ImageDraw.Draw(linierVert)
+  
+if createImgs['linierDual']:
+  # create transparent PNG with all color lines accumulated up to the current slide #
+  linierDual = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
+  inLinierDual = ImageDraw.Draw(linierDual)
 
+#if using list rather than dictionary: "ONEHEX"
+#
+#for palHex in hex2hex:
+#  mjHex = palHex
+#
+
+#if using dictionary: "MJHEXR": "PALHEX"
 for mjHex, palHex in hex2hex.items():
-  if createImgs['refier']:
+#
+  if createImgs['refierDual']:
     # create reference image with both line and text elements on black background, not for use in premiere pro project
-    refier = Image.new("RGB", (osq, osq), (0, 0, 0))
-    inRefier = ImageDraw.Draw(refier)
+    refierDual = Image.new("RGB", (osq, osq), (0, 0, 0))
+    inRefierDual = ImageDraw.Draw(refierDual)
 
   lmt_lo_tript = 0
   lmt_hi_tript = 0 
@@ -115,29 +125,46 @@ for mjHex, palHex in hex2hex.items():
   if sx > bmp + isq - 2:
     sx = bmp + isq - 2
 
-  # for img in ['inRefier', 'inTxtier']: # figure out how to loop this shit
-  if createImgs['refier']:
-    inRefier.line([(sx, 0), (sx, osq)], rgb, 6)
-    inRefier.line([(0, sx), (osq, sx)], rgb, 6)
-  if createImgs['linier']:
-    inLinier.line([(sx, 0), (sx, osq)], rgb, 6)
-    inLinier.line([(0, sx), (osq, sx)], rgb, 6)
-  if createImgs['horzier']:
-    inHorzier.line([(0, sx), (osq, sx)], rgb, 6)
-  if createImgs['vertier']:
-    inVertier.line([(sx, 0), (sx, osq)], rgb, 6)
+  # for img in ['inRefierDual', 'inTxtier']: # figure out how to loop this shit
+  if createImgs['linierHorz']:
+    inLinierHorz.line([(0, sx), (osq, sx)], rgb, 6)
+    
+  if createImgs['linierVert']:
+    inLinierVert.line([(sx, 0), (sx, osq)], rgb, 6)
+    
+  if createImgs['linierDual']:
+    inLinierDual.line([(sx, 0), (sx, osq)], rgb, 6)
+    inLinierDual.line([(0, sx), (osq, sx)], rgb, 6)
+    
+  if createImgs['refierDual']:
+    inRefierDual.line([(sx, 0), (sx, osq)], rgb, 6)
+    inRefierDual.line([(0, sx), (osq, sx)], rgb, 6)
 
   size = 256 # best font size to fill bmp # math.floor((hsv[2] * 192) + 64)
   col = 800 # allowable pixel width in which to render text, leaving 20 pixel border on each side of bmp
   #print(size)
   
-  if createImgs['txtier']:
+  if createImgs['txtierHorz'] or createImgs['txtierVert'] or createImgs['txtierDual']:
+    font = ImageFont.truetype('/Volumes/Moana/Fonts/Fonts - S/Source_Code_Pro/static/SourceCodePro-ExtraLight.ttf', size)
+  
+  if createImgs['txtierHorz']:
     # create separate transparent PNG with hex color code label
     # to allow for distinct effects processing of lines and labels in premiere pro project
-    txtier = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
-    inTxtier = ImageDraw.Draw(txtier)
+    txtierHorz = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
+    inTxtierHorz = ImageDraw.Draw(txtierHorz)
+    
+  if createImgs['txtierVert']:
+    # create separate transparent PNG with hex color code label
+    # to allow for distinct effects processing of lines and labels in premiere pro project
+    txtierVert = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
+    inTxtierVert = ImageDraw.Draw(txtierVert)
+    
+  if createImgs['txtierDual']:
+    # create separate transparent PNG with hex color code label
+    # to allow for distinct effects processing of lines and labels in premiere pro project
+    txtierDual = Image.new("RGBA", (osq, osq), (0, 0, 0, 0))
+    inTxtierDual = ImageDraw.Draw(txtierDual)
 
-    font = ImageFont.truetype('/Users/billyzduke/Dropbox/Fonts/Fonts - S/Source_Code_Pro/static/SourceCodePro-ExtraLight.ttf', size)
 
   svy = osq - sx - 86
   sy = sx - 60
@@ -187,64 +214,99 @@ for mjHex, palHex in hex2hex.items():
     print(hue360, ',', round(sx), ',', round(matty, 1), ',', round(100 - matty, 1))  
   #print('LEFT: ( 20,', round(sy), ') | RIGHT: (', bumped, ',', round(sy), ') | BOTTOM: (', bumped, ',', round(svy), ') | TOP: (', bumped, ',', round(sy), ')')
   
-  if createImgs['refier']:
-    text2width(inRefier, (20, sy), palHex, rgb, font, col) # "ls"
-    text2width(inRefier, (bumped, sy), palHex, rgb, font, col) # "ls"
+  if createImgs['refierDual']:
+    text2width(inRefierDual, (20, sy), palHex, rgb, font, col) # "ls"
+    text2width(inRefierDual, (bumped, sy), palHex, rgb, font, col) # "ls"
 
-    refier = refier.rotate(90)
-    inRefier = ImageDraw.Draw(refier)
-    text2width(inRefier, (bumped, svy), palHex, rgb, font, col) # "ls"
+    refierDual = refierDual.rotate(90)
+    inRefierDual = ImageDraw.Draw(refierDual)
+    text2width(inRefierDual, (bumped, svy), palHex, rgb, font, col) # "ls"
     
-    refier = refier.rotate(180)
-    inRefier = ImageDraw.Draw(refier)
-    text2width(inRefier, (bumped, sy), palHex, rgb, font, col) # "ls"
+    refierDual = refierDual.rotate(180)
+    inRefierDual = ImageDraw.Draw(refierDual)
+    text2width(inRefierDual, (bumped, sy), palHex, rgb, font, col) # "ls"
 
-    refier = refier.rotate(90)
+    refierDual = refierDual.rotate(90)
 
-  if createImgs['txtier']:
-    text2width(inTxtier, (20, sy), palHex, rgb, font, col) # "ls"
-    text2width(inTxtier, (bumped, sy), palHex, rgb, font, col) # "ls"
+  if createImgs['txtierHorz']:
+    text2width(inTxtierHorz, (20, sy), palHex, rgb, font, col) # "ls"
+    text2width(inTxtierHorz, (bumped, sy), palHex, rgb, font, col) # "ls"
 
-    txtier = txtier.rotate(90)
-    inTxtier = ImageDraw.Draw(txtier)
-    text2width(inTxtier, (bumped, svy), palHex, rgb, font, col) # "ls"
+  if createImgs['txtierVert']:
+    txtierVert = txtierVert.rotate(90)
+    inTxtierVert = ImageDraw.Draw(txtierVert)
+    text2width(inTxtierVert, (bumped, svy), palHex, rgb, font, col) # "ls"
     
-    txtier = txtier.rotate(180)
-    inTxtier = ImageDraw.Draw(txtier)
-    text2width(inTxtier, (bumped, sy), palHex, rgb, font, col) # "ls"
+    txtierVert = txtierVert.rotate(180)
+    inTxtierVert = ImageDraw.Draw(txtierVert)
+    text2width(inTxtierVert, (bumped, sy), palHex, rgb, font, col) # "ls"
 
-    txtier = txtier.rotate(90)
+    txtierVert = txtierVert.rotate(90)
+
+  if createImgs['txtierDual']:
+    text2width(inTxtierDual, (20, sy), palHex, rgb, font, col) # "ls"
+    text2width(inTxtierDual, (bumped, sy), palHex, rgb, font, col) # "ls"
+
+    txtierDual = txtierDual.rotate(90)
+    inTxtierDual = ImageDraw.Draw(txtierDual)
+    text2width(inTxtierDual, (bumped, svy), palHex, rgb, font, col) # "ls"
+    
+    txtierDual = txtierDual.rotate(180)
+    inTxtierDual = ImageDraw.Draw(txtierDual)
+    text2width(inTxtierDual, (bumped, sy), palHex, rgb, font, col) # "ls"
+
+    txtierDual = txtierDual.rotate(90)
 
   sl += 1
   fl = str(sl).rjust(3, '0')
-  if createImgs['refier']:
-    # WRITE BLACK PNG WITH SINGLE COLOR LINE & HEX CODE LABEL
-    forge = 'BG-ref-' + fl + '.png'
-    imageio.imwrite(forge, refier)
-    print('refier forged: ', forge)
-    imgsCreated['refier'] += 1
-  if createImgs['linier']:
-    # WRITE TRANSPARENT PNG WITH ACCUMULATED COLOR LINES
-    forge = 'BG-lines-' + fl + '.png'
-    imageio.imwrite(forge, linier)
-    print('linier forged: ', forge)
-    imgsCreated['linier'] += 1
-  if createImgs['txtier']:
+  if createImgs['linierHorz']:
     # WRITE TRANSPARENT PNG WITH DUAL-AXIS PAIRED HEX CODE LABELS
-    forge = 'BG-hex-' + fl + '.png'
-    imageio.imwrite(forge, txtier)
-    print('textier forged: ', forge)
-    imgsCreated['txtier'] += 1
-  if createImgs['horzier']:
-    forge = 'BG-horz-lines-' + fl + '.png'
-    imageio.imwrite(forge, horzier)
-    print('horzier forged: ', forge)
-    imgsCreated['horzier'] += 1
-  if createImgs['vertier']:
-    forge = 'BG-vert-lines-' + fl + '.png'
-    imageio.imwrite(forge, vertier)
-    print('vertier forged: ', forge)
-    imgsCreated['vertier'] += 1
+    forge = 'gen-imgs/hexColorLinesHorz/BG-lines-horz-' + fl + '.png'
+    imageio.imwrite(forge, linierHorz)
+    print('linierHorz forged: ', forge)
+    imgsCreated['linierHorz'] += 1
+    
+  if createImgs['linierVert']:
+    forge = 'gen-imgs/hexColorLinesVert/BG-lines-vert-' + fl + '.png'
+    imageio.imwrite(forge, linierVert)
+    print('linierVert forged: ', forge)
+    imgsCreated['linierVert'] += 1
+    
+  if createImgs['linierDual']:
+    # WRITE TRANSPARENT PNG WITH ACCUMULATED DUAL-AXES COLOR LINES
+    forge = 'gen-imgs/hexColorLinesDual/BG-lines-' + fl + '.png'
+    imageio.imwrite(forge, linierDual)
+    print('linierDual forged: ', forge)
+    imgsCreated['linierDual'] += 1
+    
+  if createImgs['txtierHorz']:
+    # WRITE TRANSPARENT PNG WITH DUAL-AXES PAIRED HEX CODE LABELS
+    forge = 'gen-imgs/hexColorLabelsHorz/BG-hex-horz-' + fl + '.png'
+    imageio.imwrite(forge, txtierHorz)
+    print('txtierHorz forged: ', forge)
+    imgsCreated['txtierHorz'] += 1
+    
+  if createImgs['txtierVert']:
+    # WRITE TRANSPARENT PNG WITH DUAL-AXES PAIRED HEX CODE LABELS
+    forge = 'gen-imgs/hexColorLabelsVert/BG-hex-vert-' + fl + '.png'
+    imageio.imwrite(forge, txtierVert)
+    print('txtierVert forged: ', forge)
+    imgsCreated['txtierVert'] += 1
+    
+  if createImgs['txtierDual']:
+    # WRITE TRANSPARENT PNG WITH DUAL-AXES PAIRED HEX CODE LABELS
+    forge = 'gen-imgs/hexColorLabelsDual/BG-hex-' + fl + '.png'
+    imageio.imwrite(forge, txtierDual)
+    print('textierDual forged: ', forge)
+    imgsCreated['txtierDual'] += 1
+    
+  if createImgs['refierDual']:
+    # WRITE BLACK PNG WITH SINGLE COLOR LINE & HEX CODE LABEL
+    forge = 'gen-imgs/hexColorRefsDual/BG-ref-' + fl + '.png'
+    imageio.imwrite(forge, refierDual)
+    print('refierDual forged: ', forge)
+    imgsCreated['refierDual'] += 1
+    
   print()
 
 # imageio.imwrite('output.png', render_color_palette())

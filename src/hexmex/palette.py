@@ -17,10 +17,10 @@ imgFiles.sort()
 # glob = All files and directories ending with .txt and that don't begin with a dot:
 #imgFiles = glob.glob(imgPath+'*.jpg')
 
-limit = -1
+limit = 1
 limiter = 0
 createPaletteImgs = True 
-createCompImage = False
+createCompImage = True
 if createCompImage:
   fonts = [ImageFont.truetype('/Volumes/Moana/Fonts/Fonts - S/Source_Code_Pro/static/SourceCodePro-ExtraLight.ttf', 32), ImageFont.truetype('/Volumes/Moana/Fonts/Fonts - S/Source_Code_Pro/static/SourceCodePro-Black.ttf', 16)]
 
@@ -31,6 +31,7 @@ skippedImages = 0
 ignoredFiles = 0
 
 for f in imgFiles:
+  print(limiter, limit)
   if limit < 0 or limiter < limit:
     # f must end with .jpg AND must contain hex code
     endsWithJpgExt = re.compile(r'\.jpg$')
@@ -74,8 +75,8 @@ for f in imgFiles:
           # Make two variations of each palette
           pSorts = ['frequency', 'luminance']
           pFileNames = {
-            'frequency': sl + '-fPalette',
-            'luminance': 'lPalette-' + palHex + '-2160x54'
+            'frequency': 'fPalettes/' + sl + '-fPalette',
+            'luminance': 'lPalettes/lPalette-' + palHex + '-2160x54'
           }
           plx = (-720, 1280)
           txx = (24, 1304)
@@ -136,7 +137,7 @@ for f in imgFiles:
                   inImgNu.text((txx[1], 975 - (k * 25)), txt, tuple(rgb), font=fonts[1])
 
           if createCompImage:
-            imgNu.save('PP' + f[:-3] + 'png')
+            imgNu.save('paletteComps/PP' + f[:-3] + 'png')
             madePaletteComps += 1
 
           # Save palette's color values to CSV
