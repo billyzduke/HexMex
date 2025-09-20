@@ -1,9 +1,9 @@
 [project]
 name = "hexmex"
 version = "0.1.0"
-description = ""
+description = "Custom script to assist in the creation of motion graphics based on image color palettes for inhumantouch short film 'Patience'."
 authors = [
-    {name = "billyZduke",email = "billyzduke@gmail.com"}
+    {name = "billyZduke", email = "billyzduke@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12,<4.0"
