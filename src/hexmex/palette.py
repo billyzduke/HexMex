@@ -1,20 +1,40 @@
-#import glob
+import json
 import math
 import re
 import colorsys
-from os import walk
+import os
+import sys
 from Pylette import extract_colors
 from PIL import Image, ImageDraw, ImageFont
+from util import get_first_pos_arg 
 
 from hexes import hex2hex
 
-imgPath = '/Volumes/Moana/Dropbox/inhumantouch.art/Patience/ALL Slides @2048□/'
+if __name__ == "__main__":
+  # Check if user provided a path or img file
+  imgPath = get_first_pos_arg()
+  if imgPath:
+    print(f"imgPath provided via command line: {imgPath}")
+    default = False
+  else:
+    imgPath = '/Volumes/Moana/Dropbox/inhumantouch.art/Patience/ALL Slides @2048⊠'
+    print(f"imgPath default: {imgPath}")
+    default = True
 
 # os.walk
-imgFiles = next(walk(imgPath), (None, None, []))[2]  # [] if no file
-imgFiles.sort()
+if os.path.isfile(imgPath):
+  imgPath, imgFile = os.path.split(imgPath)
+  imgFiles = [imgFile] 
+else:
+  imgFiles = next(os.walk(imgPath), (None, None, []))[2]
+  imgFiles.sort()
 
-# glob = All files and directories ending with .txt and that don't begin with a dot:
+#list all imgFiles
+# print(imgPath)
+# print(json.dumps(imgFiles, indent=2, default=str))
+# sys.exit()
+
+# glob = All files and directories ending with .jpg and that don't begin with a dot:
 #imgFiles = glob.glob(imgPath+'*.jpg')
 
 limit = 1
@@ -34,27 +54,44 @@ for f in imgFiles:
   print(limiter, limit)
   if limit < 0 or limiter < limit:
     # f must end with .jpg AND must contain hex code
-    endsWithJpgExt = re.compile(r'\.jpg$')
-    m = endsWithJpgExt.search(f)
+    if default:
+      endsWithJpgExt = re.compile(r'\.jpg$')
+      m = endsWithJpgExt.search(f)
+    else: 
+      m = True
     if m:
-      containsHexCode = re.compile('-[0-9A-F]{6}-')
-      m = containsHexCode.search(f)
-      fHex = m.group()
+      if default:
+        containsHexCode = re.compile('-[0-9A-F]{6}-')
+        m = containsHexCode.search(f)
+        fHex = m.group()
+      else:
+        m = True
       if m:
-        isSpecificImage = re.compile('S000-')
-        m = isSpecificImage.search(f)
+        if default:
+          isSpecificImage = re.compile('S000-')
+          m = isSpecificImage.search(f)
+        else:
+          m = True
         if m:
-          sl = f[1:4]            
-          fMjHex = fHex[1:7]
-          if fMjHex in hex2hex:
-            palHex = hex2hex[fMjHex]
+          imgPath2File = os.path.join(imgPath, f)
+          if default:
+            sl = f[1:4]            
+            fMjHex = fHex[1:7]
+            if fMjHex in hex2hex:
+              palHex = hex2hex[fMjHex]
+            else:
+              palHex = fMjHex
+            if sl == '000':
+              sl = fMjHex
+              
+            print(sl, ':', imgPath2File)
+            freqFile = 'fPalettes/' + sl
+            lumiFile = 'lPalettes/lPalette-' + palHex
+            compFile = 'paletteComps/PP' + f[:-3]
           else:
-            palHex = fMjHex
-          if sl == '000':
-            sl = fMjHex
-            
-          imgPath2File = imgPath + f
-          print(sl, ':', imgPath2File)
+            print(imgPath2File)
+            freqFile = lumiFile = imgPath + '/TEMP'
+            compFile = imgPath + '/COMP' + f[:-3]
           
           if createCompImage:
             # create new empty canvas
@@ -75,8 +112,8 @@ for f in imgFiles:
           # Make two variations of each palette
           pSorts = ['frequency', 'luminance']
           pFileNames = {
-            'frequency': 'fPalettes/' + sl + '-fPalette',
-            'luminance': 'lPalettes/lPalette-' + palHex + '-2160x54'
+            'frequency': freqFile + '-fPalette',
+            'luminance': lumiFile + '-2160x54'
           }
           plx = (-720, 1280)
           txx = (24, 1304)
@@ -137,7 +174,7 @@ for f in imgFiles:
                   inImgNu.text((txx[1], 975 - (k * 25)), txt, tuple(rgb), font=fonts[1])
 
           if createCompImage:
-            imgNu.save('paletteComps/PP' + f[:-3] + 'png')
+            imgNu.save(compFile + 'png')
             madePaletteComps += 1
 
           # Save palette's color values to CSV
