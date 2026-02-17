@@ -1,9 +1,9 @@
-import json
+#import json
+#import sys
 import math
 import re
 import colorsys
 import os
-import sys
 from Pylette import extract_colors
 from PIL import Image, ImageDraw, ImageFont
 from util import get_first_pos_arg 
@@ -132,7 +132,17 @@ for f in imgFiles:
 
             # Display the palette, and save the image to file            
             if createPaletteImgs: # or createCompImage:
-              palette.display(w=54, h=54, save_to_file=True, filename=pFileNames[pSort], extension='png')
+              #palette.display(w=54, h=54, save_to_file=True, filename=pFileNames[pSort], extension='png')
+              clean_colors = [tuple(int(c) for c in col.rgb) for col in palette]
+              # Create a 1-pixel high image representing the palette
+              # Each pixel's color corresponds to one color in the palette
+              palette_strip = Image.new("RGB", (len(clean_colors), 1))
+              palette_strip.putdata(clean_colors)
+              # Resize it to your desired dimensions
+              # Using Image.NEAREST ensures the color blocks stay sharp and don't blur
+              tmpImg = palette_strip.resize((2160, 54), resample=Image.NEAREST)
+              tmpImg.save(f"{pFileNames[pSort]}.png")
+              
               if pSort == 'frequency':
                 madeFrequencyPalettes += 1
               else:
