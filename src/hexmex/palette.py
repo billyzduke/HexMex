@@ -118,7 +118,9 @@ for f in imgFiles:
           plx = (-720, 1280)
           txx = (24, 1304)
           for pSort in pSorts:
-            palette = extract_colors(image=imgPath2File, palette_size=40, sort_mode=pSort)
+            # mode = 'KM' # 'K-Means'
+            # mode = 'MC' # 'Median Cut'
+            palette = extract_colors(image=imgPath2File, palette_size=40, sort_mode=pSort, mode='MC')
             #print(palette)
             # fcHex = ''
             # if pSort == 'frequency':
@@ -130,8 +132,7 @@ for f in imgFiles:
             #     fcHex += hx.upper()
             #   print(fcHex)
 
-            # Display the palette, and save the image to file            
-            if createPaletteImgs: # or createCompImage:
+            if createPaletteImgs:
               #palette.display(w=54, h=54, save_to_file=True, filename=pFileNames[pSort], extension='png')
               clean_colors = [tuple(int(c) for c in col.rgb) for col in palette]
               # Create a 1-pixel high image representing the palette
